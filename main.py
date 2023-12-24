@@ -4,10 +4,23 @@ from datetime import datetime
 
 class Field:
     def __init__(self, value):
-        self.value = value
+        self.__value = value
 
     def __str__(self):
-        return str(self.value)
+        return str(self.__value)
+        
+    def is_valid(self, value):
+        return True
+    
+    @property
+    def value(self):
+        return self.__value
+
+    @value.setter
+    def value(self, value):
+        if not self.is_valid(value):
+            raise ValueError("Invalid value")
+        self.__value = value
 
 
 class Name(Field):
@@ -15,51 +28,21 @@ class Name(Field):
 
 
 class Phone(Field):
-    def __init__(self, value):
-        self._value = None
-        self.value = value
-
-    @property
-    def value(self):
-        return self._value
-
-    @value.setter
-    def value(self, new_value):
-        if len(new_value) != 10 or not new_value.isdigit():
-            raise ValueError("Phone number must be 10 digits.")
-        self._value = new_value
+    def is_valid(self, value):
+        return len(value) == 10 and value.isdigit()
 
 
 class Birthday(Field):
-    def __init__(self, value):
-        self._value = None
-        self.value = value
-
-    @property
-    def value(self):
-        return self._value
-
-    @value.setter
-    def value(self, new_value):
-        if not isinstance(new_value, datetime):
-            raise ValueError("Birthday must be a datetime object.")
-        self._value = new_value
+    def is_valid(self, value):
+        return isinstance(value, datetime)
 
 
 class Record:
     def __init__(self, name, birthday=None):
         self.name = Name(name)
         self.phones = []
-        self._birthday = None
-        if birthday is not None:
-            self._birthday = self.__add_birthday(birthday)
+        self.birthday = Birthday(birthday) if birthday else None
 
-
-    def __add_birthday(self, date):
-        try:
-            return Birthday(date)
-        except ValueError as error:
-            raise ValueError(f"Error while adding birthday for {self.name.value}: {error}")
 
     def add_phone(self, phone_number):
         self.phones.append(Phone(phone_number))
